@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent - Google Cloud Query Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .query-section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        #queryInput {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        #queryInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        #submitBtn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        #submitBtn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        #submitBtn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        #clearBtn {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        #clearBtn:hover {
+            background: #e0e0e0;
+        }
+
+        .examples {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .examples h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .example-queries {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .example-btn {
+            padding: 12px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            color: #667eea;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        #response {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+
+        #response.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .response-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .response-content {
+            color: #555;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .error {
+            border-left-color: #e74c3c;
+        }
+
+        .error .response-header {
+            color: #e74c3c;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .debug-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .debug-title {
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .debug-title:hover {
+            color: #667eea;
+        }
+
+        .debug-content {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #333;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .debug-content.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Agent for Google Cloud</h1>
+        <p class="subtitle">Query your Google Cloud infrastructure using natural language</p>
+
+        <div class="query-section">
+            <label for="queryInput">Enter your question:</label>
+            <textarea id="queryInput" placeholder="E.g., List all my compute instances"></textarea>
+            <div class="button-group">
+                <button id="submitBtn">Submit Query</button>
+                <button id="clearBtn">Clear</button>
+            </div>
+        </div>
+
+        <div class="examples">
+            <h3>Example Queries:</h3>
+            <div class="example-queries">
+                <button class="example-btn" data-query="List all my compute instances">List all my compute instances</button>
+                <button class="example-btn" data-query="What machine types do I have running?">What machine types do I have running?</button>
+                <button class="example-btn" data-query="Show me all available zones">Show me all available zones</button>
+                <button class="example-btn" data-query="List all regions">List all regions</button>
+            </div>
+        </div>
+
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Processing your query...</p>
+        </div>
+
+        <div id="response">
+            <div class="response-header">Response:</div>
+            <div class="response-content" id="responseContent"></div>
+            <div class="debug-section">
+                <div class="debug-title" id="debugToggle">▶ Show Debug Information</div>
+                <div class="debug-content" id="debugContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const queryInput = document.getElementById('queryInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const responseDiv = document.getElementById('response');
+        const responseContent = document.getElementById('responseContent');
+        const debugContent = document.getElementById('debugContent');
+        const debugToggle = document.getElementById('debugToggle');
+        const loading = document.querySelector('.loading');
+        const exampleBtns = document.querySelectorAll('.example-btn');
+
+        exampleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                queryInput.value = btn.dataset.query;
+                queryInput.focus();
+            });
+        });
+
+        debugToggle.addEventListener('click', () => {
+            debugContent.classList.toggle('show');
+            debugToggle.textContent = debugContent.classList.contains('show')
+                ? '▼ Hide Debug Information'
+                : '▶ Show Debug Information';
+        });
+
+        clearBtn.addEventListener('click', () => {
+            queryInput.value = '';
+            responseDiv.classList.remove('show');
+            responseDiv.classList.remove('error');
+        });
+
+        submitBtn.addEventListener('click', submitQuery);
+        queryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                submitQuery();
+            }
+        });
+
+        async function submitQuery() {
+            const query = queryInput.value.trim();
+
+            if (!query) {
+                alert('Please enter a query');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            loading.classList.add('show');
+            responseDiv.classList.remove('show');
+
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+
+                const data = await response.json();
+
+                responseDiv.classList.remove('error');
+
+                if (data.success) {
+                    responseContent.textContent = data.response;
+                } else {
+                    responseDiv.classList.add('error');
+                    responseContent.textContent = 'Error: ' + (data.error || 'Unknown error occurred');
+                }
+
+                debugContent.textContent = JSON.stringify(data, null, 2);
+                debugContent.classList.remove('show');
+                debugToggle.textContent = '▶ Show Debug Information';
+
+            } catch (error) {
+                responseDiv.classList.add('error');
+                responseContent.textContent = 'Error: ' + error.message;
+                debugContent.textContent = JSON.stringify({ error: error.message }, null, 2);
+            } finally {
+                loading.classList.remove('show');
+                responseDiv.classList.add('show');
+                submitBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
