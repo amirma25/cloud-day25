@@ -12,4 +12,6 @@ build
 .gitignore
 README.md
 .env
-*.log
+.venv
+venv/
+ENV/

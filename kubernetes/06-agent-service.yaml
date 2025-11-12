@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: vllm-llama3-service
+  name: adk-agent-service
   namespace: default
 spec:
   type: ClusterIP
   selector:
-    app: vllm-llama3
+    app: adk-agent
   ports:
   - name: http
-    port: 8000
-    targetPort: 8000
+    port: 80
+    targetPort: 8001
     protocol: TCP

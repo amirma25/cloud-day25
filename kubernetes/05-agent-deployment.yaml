@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adk-agent
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adk-agent
+  template:
+    metadata:
+      labels:
+        app: adk-agent
+    spec:
+      containers:
+      - name: agent
+        image: REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY_NAME/adk-agent:latest
+        env:
+        - name: LLM_BASE_URL
+          value: "http://vllm-llama3-service:8000/v1"
+        - name: MODEL_NAME
+          value: "meta-llama/Llama-3.1-8B-Instruct"
+        ports:
+        - containerPort: 8001
+          name: http
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8001
+          initialDelaySeconds: 10
+          periodSeconds: 5

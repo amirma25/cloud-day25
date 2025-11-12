@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: vllm-llama3-service
+  name: gcp-helper-service
   namespace: default
 spec:
   type: ClusterIP
   selector:
-    app: vllm-llama3
+    app: gcp-helper
   ports:
   - name: http
-    port: 8000
-    targetPort: 8000
+    port: 8080
+    targetPort: 8080
     protocol: TCP

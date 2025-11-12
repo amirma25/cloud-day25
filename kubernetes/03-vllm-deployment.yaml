@@ -1,53 +1,65 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: llama3-vllm-deployment
+  name: vllm-llama3-deployment
+  namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: llama3-server
+      app: vllm-llama3
   template:
     metadata:
       labels:
-        app: llama3-server
+        app: vllm-llama3
     spec:
       containers:
       - name: vllm-container
-        image: vllm/vllm-openai:latest
+        image: vllm/vllm-openai:v0.8.5
         command:
-          - "python3"
-          - "-m"
-          - "vllm.entrypoints.openai.api_server"
+        - "python3"
+        - "-m"
+        - "vllm.entrypoints.openai.api_server"
         args:
-          - "--model=meta-llama/Llama-3.1-8B-Instruct"
-          - "--dtype=half"
-          - "--max-model-len=4096"
-          - "--gpu-memory-utilization=0.95"
-          - "--enable-auto-tool-choice"
-          - "--tool-call-parser=llama3_json"
-          - "--chat-template=/templates/chat_template.jinja"
+        - --model
+        - $(MODEL_ID)
+        - --tensor-parallel-size
+        - "1"
+        - --max-model-len
+        - "32768"
+        - --gpu-memory-utilization
+        - "0.9"
+        - --enable-chunked-prefill
+        - --enable-auto-tool-choice
+        - --tool-call-parser
+        - llama3_json
+        - --host
+        - "0.0.0.0"
+        - --port
+        - "8000"
         env:
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
             secretKeyRef:
-              name: hf-token-secret
-              key: token
+              name: hf-secret
+              key: hf-token-secret
+        - name: MODEL_ID
+          value: "meta-llama/Llama-3.1-8B-Instruct"
         ports:
         - containerPort: 8000
           name: http
         resources:
           requests:
             cpu: "2"
-            memory: "16Gi"
-            nvidia.com/gpu: "1"
+            memory: "10Gi"
+            nvidia.com/gpu: 1
           limits:
-            cpu: "4"
-            memory: "20Gi"
-            nvidia.com/gpu: "1"
+            cpu: "2"
+            memory: "10Gi"
+            nvidia.com/gpu: 1
         volumeMounts:
-        - name: chat-template
-          mountPath: /templates
+        - name: dshm
+          mountPath: /dev/shm
         livenessProbe:
           httpGet:
             path: /health
@@ -55,6 +67,7 @@ spec:
           initialDelaySeconds: 600
           periodSeconds: 30
           timeoutSeconds: 10
+          failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /health
@@ -62,9 +75,10 @@ spec:
           initialDelaySeconds: 600
           periodSeconds: 30
           timeoutSeconds: 10
+          failureThreshold: 3
       volumes:
-      - name: chat-template
-        configMap:
-          name: vllm-chat-template
+      - name: dshm
+        emptyDir:
+          medium: Memory
       nodeSelector:
         cloud.google.com/gke-accelerator: nvidia-l4
