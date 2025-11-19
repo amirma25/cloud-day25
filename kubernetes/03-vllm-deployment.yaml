@@ -44,7 +44,10 @@ spec:
               name: hf-secret
               key: hf-token-secret
         - name: MODEL_ID
-          value: "meta-llama/Llama-3.1-8B-Instruct"
+          valueFrom:
+            configMapKeyRef:
+              name: vllm-config
+              key: MODEL_ID
         ports:
         - containerPort: 8000
           name: http
@@ -72,9 +75,9 @@ spec:
           httpGet:
             path: /health
             port: 8000
-          initialDelaySeconds: 600
-          periodSeconds: 30
-          timeoutSeconds: 10
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
           failureThreshold: 3
       volumes:
       - name: dshm

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADK Agent</title>
+    <title>GCP Agent</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -88,7 +88,12 @@
 
         .assistant-icon {
             background: #ffffff;
-            color: #000000;
+            padding: 4px;
+        }
+
+        .assistant-icon svg {
+            width: 24px;
+            height: 24px;
         }
 
         .message-content {
@@ -111,6 +116,18 @@
 
         .message.assistant .message-text {
             color: #d0d0d0;
+        }
+
+        /* Reasoning indicator */
+        .reasoning {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #888;
+            display: inline-block;
         }
 
         /* Loading indicator */
@@ -145,6 +162,20 @@
                 transform: scale(1);
                 opacity: 1;
             }
+        }
+
+        /* Spinning loader */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #2a2a2a;
+            border-top-color: #666;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Input Area */
@@ -353,7 +384,12 @@
 
             const iconDiv = document.createElement('div');
             iconDiv.className = `message-icon ${sender}-icon`;
-            iconDiv.textContent = sender === 'user' ? 'Y' : 'A';
+            if (sender === 'user') {
+                iconDiv.textContent = 'Y';
+            } else {
+                // Google "G" logo SVG
+                iconDiv.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>';
+            }
 
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
@@ -378,7 +414,7 @@
 
             const iconDiv = document.createElement('div');
             iconDiv.className = 'message-icon assistant-icon';
-            iconDiv.textContent = 'A';
+            iconDiv.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>';
 
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
@@ -422,14 +458,20 @@
 
             const iconDiv = document.createElement('div');
             iconDiv.className = 'message-icon assistant-icon';
-            iconDiv.textContent = 'A';
+            iconDiv.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>';
 
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
 
+            // Add spinner while waiting
+            const spinnerDiv = document.createElement('div');
+            spinnerDiv.className = 'spinner';
+            contentDiv.appendChild(spinnerDiv);
+
             const textDiv = document.createElement('div');
             textDiv.className = 'message-text';
             textDiv.textContent = '';
+            textDiv.style.display = 'none'; // Hide text initially
 
             contentDiv.appendChild(textDiv);
             messageDiv.appendChild(iconDiv);
@@ -458,15 +500,48 @@
 
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
-                            const data = JSON.parse(line.slice(6));
-                            if (data.content) {
-                                textDiv.textContent += data.content;
-                                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                            try {
+                                const jsonStr = line.slice(6).trim();
+                                if (jsonStr) {
+                                    const data = JSON.parse(jsonStr);
+                                    if (data.reasoning) {
+                                        // Remove spinner and show content
+                                        if (spinnerDiv.parentNode) {
+                                            spinnerDiv.remove();
+                                        }
+                                        textDiv.style.display = 'block';
+
+                                        // Show reasoning indicator
+                                        const reasoningDiv = document.createElement('div');
+                                        reasoningDiv.className = 'reasoning';
+                                        reasoningDiv.textContent = data.reasoning;
+                                        contentDiv.insertBefore(reasoningDiv, textDiv);
+                                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                                    }
+                                    if (data.content) {
+                                        // Remove spinner and show content
+                                        if (spinnerDiv.parentNode) {
+                                            spinnerDiv.remove();
+                                        }
+                                        textDiv.style.display = 'block';
+
+                                        textDiv.textContent += data.content;
+                                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                                    }
+                                }
+                            } catch (e) {
+                                // Skip malformed JSON lines
+                                console.debug('Skipping line:', line);
                             }
                         }
                     }
                 }
             } catch (error) {
+                // Remove spinner and show error
+                if (spinnerDiv.parentNode) {
+                    spinnerDiv.remove();
+                }
+                textDiv.style.display = 'block';
                 textDiv.textContent = 'Sorry, there was an error communicating with the server.';
                 console.error('Error:', error);
             } finally {

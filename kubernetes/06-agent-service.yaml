@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: adk-agent-service
+  name: gcp-agent-service
   namespace: default
 spec:
   type: ClusterIP
   selector:
-    app: adk-agent
+    app: gcp-agent
   ports:
   - name: http
     port: 80

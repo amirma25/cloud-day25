@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gcp-helper
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gcp-helper
+  template:
+    metadata:
+      labels:
+        app: gcp-helper
+    spec:
+      serviceAccountName: gcp-helper-sa
+      containers:
+      - name: gcp-helper
+        image: asia-northeast1-docker.pkg.dev/amirma-private2/gcp-agent-repo/gcp-helper:latest
+        env:
+        - name: GCP_amirma-private2
+          value: "amirma-private2"
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "amirma-private2"
+        ports:
+        - containerPort: 8080
+          name: http
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
